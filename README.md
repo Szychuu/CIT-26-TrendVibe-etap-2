@@ -4,7 +4,7 @@ System automatyzuje ocenę pilności zgłoszeń (URGENCY_SCORE) oraz określa ka
 
 ## 🚀 Instrukcja uruchomienia skryptu
 
-1. **Wymagania wstępne:** Upewnij się, że masz zainstalowanego Pythona w wersji 3.8 lub nowszej.
+1. **Wymagania wstępne:** **Python:** wersja 3.11.x lub 3.12.x (64-bit).
 2. **Przygotowanie środowiska:** Otwórz terminal (lub wiersz poleceń) w folderze z projektem i zainstaluj niezbędne biblioteki za pomocą polecenia:
    `pip install -r requirements.txt`
 3. **Plik z danymi:** Upewnij się, że w tym samym folderze co skrypt `main.py` znajduje się plik z danymi wejściowymi o nazwie `do_weryfikacji_recznej_START.csv`.
