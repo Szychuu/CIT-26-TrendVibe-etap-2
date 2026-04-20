@@ -1,45 +1,62 @@
-# TrendVibe - System Priorytetyzacji Zgłoszeń BOK ("Sprytne Zwroty AI" v2)
+# TrendVibe – System Priorytetyzacji Zgłoszeń BOK („Sprytne Zwroty AI" v2)
 
-System automatyzuje ocenę pilności zgłoszeń (URGENCY_SCORE) oraz określa kategoryczny poziom ryzyka (RISK_LEVEL) na podstawie analizy wiadomości od klientów. Rozwiązanie działa całkowicie lokalnie, wykorzystując modele open-source.
+Każda minuta zwłoki w odpowiedzi na pilne zgłoszenie klienta ma swoją cenę. Ten system rozwiązuje ten problem, automatycznie oceniając pilność wiadomości (URGENCY_SCORE) i kategoryzując poziom ryzyka prawnego (RISK_LEVEL) – zanim konsultant zdąży wypić poranną kawę. Całość działa lokalnie, bez żadnych zewnętrznych, płatnych API, opierając się wyłącznie na modelach open-source.
 
-## 🚀 Instrukcja uruchomienia skryptu
+---
 
-1. **Wymagania wstępne:** Upewnij się, że masz zainstalowanego Pythona w wersji 3.8 lub nowszej.
-2. **Przygotowanie środowiska:** Otwórz terminal (lub wiersz poleceń) w folderze z projektem i zainstaluj niezbędne biblioteki za pomocą polecenia:
-   `pip install -r requirements.txt`
-3. **Plik z danymi:** Upewnij się, że w tym samym folderze co skrypt `main.py` znajduje się plik z danymi wejściowymi o nazwie `do_weryfikacji_recznej_START.csv`.
-4. **Uruchomienie:** Wpisz w terminalu:
-   `python main.py`
-5. **Wynik:** Po zakończeniu działania programu (przy pierwszym uruchomieniu może to potrwać chwilę ze względu na pobieranie modelu z sieci), w folderze pojawi się plik `kolejka_priorytetowa.csv` posortowany według priorytetów.
+## 🚀 Jak uruchomić projekt
 
-## 🧠 Model NLP do analizy sentymentu
+1. **Wymagania wstępne:** Python 3.11.x lub 3.12.x (64-bit).
+2. **Instalacja zależności:** Otwórz terminal w folderze z projektem i uruchom:
+   ```
+   pip install -r requirements.txt
+   ```
+3. **Dane wejściowe:** Upewnij się, że w tym samym katalogu co `main.py` znajduje się plik `do_weryfikacji_recznej_START.csv`.
+4. **Uruchomienie:**
+   ```
+   python main.py
+   ```
+5. **Wynik:** Po zakończeniu (przy pierwszym uruchomieniu model pobiera się z sieci – to chwilę potrwa) w folderze pojawi się plik `kolejka_priorytetowa.csv` z gotową, posortowaną listą priorytetów.
 
-**Wybrany model:** `bardsai/twitter-sentiment-pl-base` (dostępny w bibliotece Hugging Face Transformers).
+---
 
-**Uzasadnienie wyboru:**
-Do poprawnego działania na polskojęzycznych zgłoszeniach potrzebowaliśmy modelu, który "rozumie" nasz język. Model *bardsai* został wytrenowany na potężnej bazie danych z polskiego Twittera. Język używany w mediach społecznościowych jest bardzo bliski językowi, jakiego sfrustrowani klienci używają pisząc do Biura Obsługi Klienta – zawiera skróty myślowe, potoczne zwroty i silny ładunek emocjonalny. Model ten jest przy tym wariantem *base* (opartym na architekturze RoBERTa), co oznacza, że zachowuje świetny balans między wysoką dokładnością (Accuracy) a niskim zużyciem zasobów komputerowych. Dzięki temu z łatwością działa lokalnie (nawet bez dedykowanej karty graficznej), spełniając wymóg braku zewnętrznych, płatnych API.
+## 🧠 Dlaczego akurat ten model NLP?
 
-## ⚖️ Zdefiniowane słowa kluczowe (Legal Keywords)
+**Model:** `bardsai/twitter-sentiment-pl-base` (Hugging Face Transformers)
 
-Do identyfikacji gróźb prawnych i eskalacji stworzono listę słów kluczowych opartą o najczęstsze zwroty w konfliktach na linii konsument-sklep:
-- "sąd", "sądzie", "pozew" (Bezpośrednie groźby wkroczenia na drogę sądową)
-- "prawnik", "kancelari" (Sygnalizacja wsparcia prawnego)
-- "rzecznik praw", "rzecznika praw" (Odwołania do Rzecznika Praw Konsumenta)
-- "uokik" (Groźba zgłoszenia do Urzędu Ochrony Konkurencji i Konsumentów)
-- "policj", "prokuratur" (Zaangażowanie organów ścigania)
-- "oszustwo", "oszukany", "okradzion", "kradzież" (Mocne słowa, często będące podstawą do pomówień i ostrego sporu)
+Klient, który jest sfrustrowany, nie pisze jak prawnik – pisze jak człowiek. Skróty, potoczne zwroty, emocje wprost. Właśnie dlatego wybraliśmy model wytrenowany na milionach wpisów z polskiego Twittera: język mediów społecznościowych jest zaskakująco bliski temu, co ląduje w skrzynce Biura Obsługi Klienta.
 
-Zastosowano fragmenty słów (tzw. rdzenie), aby system wyłapywał różne odmiany (np. "policj" wyłapie zarówno "policja", "policji", jak i "policję").
+Model oparty na architekturze RoBERTa w wariancie `base` to świadomy kompromis: wysoka dokładność przy niskim zużyciu zasobów. Działa płynnie nawet bez dedykowanej karty graficznej, co spełnia jeden z kluczowych wymogów projektu – pełna lokalność bez zewnętrznych kosztów.
 
-## 🛠 Dodatkowe optymalizacje (Performance, Bezpieczeństwo i Edge Cases)
+---
 
-W projekcie wykraczono poza podstawowe wymagania, wprowadzając rozwiązania podnoszące niezawodność, wydajność i odporność systemu na błędy:
+## ⚖️ Słowa kluczowe sygnalizujące ryzyko prawne
 
-1. **Zabezpieczenie przed przepełnieniem modelu (Truncation):**
-   W funkcji inicjalizującej pipeline dodano flagę `truncation=True`. Gwarantuje to stabilność działania programu nawet w sytuacji, gdy klient wyśle ekstremalnie długą wiadomość (np. wklejając treść całych regulaminów), co zapobiega awariom wynikającym z przekroczenia limitu tokenów przez model. Dodano również flagę `top_k=None` dla kompatybilności z nowymi wersjami Hugging Face.
-2. **Integralność danych i kodowanie (JSON):**
-   Zamiast standardowego rzutowania na string, do formatowania listy powodów (REASONS) użyto biblioteki `json` z flagą `ensure_ascii=False`. Zabezpiecza to polskie znaki diakrytyczne przed błędnym kodowaniem podczas zapisu do pliku .csv, gwarantując czytelność dla końcowego użytkownika biznesowego.
-3. **Zabezpieczenie przed fałszywymi alarmami (Regex Word Boundaries):**
-   Użyto wyrażeń regularnych (`re.compile` z użyciem granic słów `\b`) zamiast standardowego wyszukiwania podciągów. Dzięki temu system precyzyjnie reaguje na słowa kluczowe (np. "sąd"), ignorując fałszywe dopasowania ukryte w innych wyrazach (np. "rozsądny"), oszczędzając jednocześnie zasoby dzięki wbudowanej fladze `re.IGNORECASE`.
-4. **Grupowe przetwarzanie danych (Batching):**
-   Skrypt ładuje dane paczkami (batch size) prosto do potoku (pipeline) NLP. Dzięki temu transformery optymalnie wykorzystują zasoby maszyny, co drastycznie skraca czas weryfikacji całego pliku z minut do ułamków sekund.
+Zamiast czekać, aż sprawa trafi do sądu, system wyłapuje sygnały ostrzegawcze już na etapie wiadomości. Lista słów kluczowych odzwierciedla realia konfliktów konsumenckich w Polsce:
+
+- `sąd`, `sądzie`, `pozew` – bezpośrednia groźba drogi sądowej
+- `prawnik`, `kancelari` – sygnał wsparcia prawnego
+- `rzecznik praw`, `rzecznika praw` – odwołanie do Rzecznika Praw Konsumenta
+- `uokik` – groźba zgłoszenia do UOKiK
+- `policj`, `prokuratur` – zaangażowanie organów ścigania
+- `oszustwo`, `oszukany`, `okradzion`, `kradzież` – mocne sformułowania często stanowiące podstawę ostrego sporu
+
+Celowo używamy rdzeni słów, a nie pełnych form – dzięki temu `policj` dopasuje zarówno „policja", „policji", jak i „policję", bez potrzeby ręcznego wypisywania każdej odmiany.
+
+---
+
+## 🛠️ Co poszło dalej, niż wymagała specyfikacja
+
+Dobry system to nie tylko poprawna logika – to też odporność na rzeczy, których nie przewidzieliśmy. Dlatego zadbaliśmy o kilka dodatkowych warstw bezpieczeństwa:
+
+**Ochrona przed przepełnieniem modelu (Truncation)**
+Pipeline działa ze flagą `truncation=True`. Jeśli klient wklei treść całego regulaminu do pola wiadomości (tak, to się zdarza), model nie wywali błędu – po prostu bezpiecznie przytnie input do dopuszczalnego limitu tokenów. Dodana flaga `top_k=None` zapewnia kompatybilność z nowszymi wersjami biblioteki Hugging Face.
+
+**Polskie znaki bez kompromisów (JSON)**
+Zamiast rzutowania na string, lista powodów (REASONS) jest serializowana przez bibliotekę `json` z flagą `ensure_ascii=False`. Żadnych tajemniczych znaków zapytania zamiast „ą", „ę" czy „ż" w wynikowym pliku CSV.
+
+**Koniec z fałszywymi alarmami (Regex Word Boundaries)**
+System używa wyrażeń regularnych z granicami słów (`\b`) zamiast prostego wyszukiwania podciągów. Dzięki temu słowo `sąd` nie wyzwoli alarmu w słowie `rozsądny`. Flaga `re.IGNORECASE` sprawia, że wielkość liter przestaje mieć znaczenie, bez duplikowania reguł.
+
+**Szybkość przez przetwarzanie wsadowe (Batching)**
+Dane trafiają do pipeline'u NLP w paczkach, a nie rekord po rekordzie. Transformery lubią batche – to pozwoliło skrócić czas przetwarzania całego pliku z minut do ułamków sekund.

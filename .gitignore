@@ -1,0 +1,20 @@
+# Środowisko wirtualne (TO MUSI BYĆ IGNOROWANE)
+venv/
+env/
+ENV/
+venv_new/
+venv_64/
+
+# Pliki PyCharma (ustawienia lokalne Twojego IDE)
+.idea/
+
+# Pliki tymczasowe Pythona (skompilowany kod)
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Dane i logi (opcjonalnie, zależy co masz w projekcie)
+*.log
+.env
+
+kolejka_priorytetowa.csv

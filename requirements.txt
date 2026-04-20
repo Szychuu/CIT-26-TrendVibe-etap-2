@@ -1,0 +1,4 @@
+pandas==2.2.1
+torch==2.2.1
+transformers==4.38.2
+tf-keras==2.15.0
